@@ -1,0 +1,6 @@
+{
+  "name": "Portal Administrasi SDN Cimandirasa",
+  "description": "Sistem administrasi terpadu untuk semua guru kelas di SD Negeri Cimandirasa. Kelola siswa, presensi, kas kelas, jadwal pelajaran, nilai, piket, dan agenda kelas secara mandiri.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

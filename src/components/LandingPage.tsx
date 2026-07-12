@@ -61,6 +61,21 @@ export default function LandingPage({
 }: LandingPageProps) {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editedProfile, setEditedProfile] = useState<SchoolInfo>({ ...schoolInfo });
+
+  // Calculate total students dynamically from local storage data of all teachers
+  const getTotalStudents = () => {
+    let total = 0;
+    teachers.filter(t => t.role !== 'admin').forEach(t => {
+      const raw = localStorage.getItem(`class_students_${t.id}`);
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) total += parsed.length;
+        } catch (e) {}
+      }
+    });
+    return total;
+  };
   
   // Tab within school management for Admin
   const [adminTab, setAdminTab] = useState<'announcements' | 'achievements' | 'teachers'>('announcements');
@@ -872,7 +887,7 @@ Tim Pengembang Sistem Portal SDN Cimandirasa
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-500 to-indigo-600 p-0.5 shadow-lg overflow-hidden shrink-0 border border-indigo-400/20">
               <img 
-                src={schoolLogoImg} 
+                src={schoolInfo.logoUrl || schoolLogoImg} 
                 alt="SDN Cimandirasa Logo" 
                 className="w-full h-full object-cover rounded-lg"
                 referrerPolicy="no-referrer"
@@ -961,22 +976,18 @@ Tim Pengembang Sistem Portal SDN Cimandirasa
               </p>
 
               {/* Quick stats list */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-slate-850">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-850">
                 <div className="p-3 bg-[#161B22]/50 rounded-xl border border-slate-800">
                   <div className="text-xl font-extrabold text-white">{teachers.filter(t => t.role !== 'admin').length}</div>
                   <div className="text-[10px] text-slate-500 font-semibold uppercase mt-0.5">Wali Kelas</div>
                 </div>
                 <div className="p-3 bg-[#161B22]/50 rounded-xl border border-slate-800">
-                  <div className="text-xl font-extrabold text-white">6</div>
-                  <div className="text-[10px] text-slate-500 font-semibold uppercase mt-0.5">Jenjang Kelas</div>
+                  <div className="text-xl font-extrabold text-white">{getTotalStudents()}</div>
+                  <div className="text-[10px] text-slate-500 font-semibold uppercase mt-0.5">Total Siswa</div>
                 </div>
                 <div className="p-3 bg-[#161B22]/50 rounded-xl border border-slate-800">
                   <div className="text-xl font-extrabold text-white">{schoolInfo.achievements.length}</div>
                   <div className="text-[10px] text-slate-500 font-semibold uppercase mt-0.5">Prestasi Sekolah</div>
-                </div>
-                <div className="p-3 bg-[#161B22]/50 rounded-xl border border-slate-800">
-                  <div className="text-xl font-extrabold text-white">A</div>
-                  <div className="text-[10px] text-slate-500 font-semibold uppercase mt-0.5">Akreditasi</div>
                 </div>
               </div>
 
@@ -999,7 +1010,7 @@ Tim Pengembang Sistem Portal SDN Cimandirasa
                 <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-transparent pointer-events-none" />
                 <div className="w-32 h-32 mx-auto rounded-full bg-indigo-500/10 p-1 border border-indigo-500/20 mb-6 flex items-center justify-center">
                   <img 
-                    src={schoolLogoImg} 
+                    src={schoolInfo.logoUrl || schoolLogoImg} 
                     alt="SDN Cimandirasa Logo" 
                     className="w-full h-full object-cover rounded-full"
                     referrerPolicy="no-referrer"
@@ -1048,6 +1059,35 @@ Tim Pengembang Sistem Portal SDN Cimandirasa
 
               {isEditingProfile ? (
                 <div className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-400">Logo / Foto Sekolah</label>
+                    <div className="flex items-center gap-3">
+                      {editedProfile.logoUrl && (
+                        <img 
+                          src={editedProfile.logoUrl} 
+                          alt="Pratinjau Logo" 
+                          className="w-10 h-10 object-cover rounded-lg border border-slate-700"
+                        />
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="text-xs text-slate-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-505 cursor-pointer"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              if (ev.target?.result) {
+                                setEditedProfile({ ...editedProfile, logoUrl: ev.target.result as string });
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
                   <div className="space-y-1">
                     <label className="text-xs font-semibold text-slate-400">Nama Sekolah</label>
                     <input
@@ -1414,25 +1454,93 @@ Tim Pengembang Sistem Portal SDN Cimandirasa
             <div className="space-y-4">
               {/* Show list of teacher/classes in school */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {teachers.filter(t => t.role !== 'admin').map(t => (
-                  <div key={t.id} className="p-4 bg-[#0F1115]/50 border border-slate-800 rounded-xl flex items-center justify-between group">
-                    <div className="space-y-1">
-                      <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-lg">
-                        {t.className}
-                      </span>
-                      <h4 className="text-xs sm:text-sm font-extrabold text-white mt-1.5">{t.name}</h4>
-                      <p className="text-[10px] text-slate-500">Status: Aktif sebagai Wali Kelas</p>
-                    </div>
+                {teachers.filter(t => t.role !== 'admin').map(t => {
+                  const rawStudents = localStorage.getItem(`class_students_${t.id}`);
+                  const rawCash = localStorage.getItem(`class_cash_${t.id}`);
+                  const rawAttendance = localStorage.getItem(`class_attendance_${t.id}`);
+                  
+                  let studentCount = 0;
+                  let cashBalance = 0;
+                  let attendanceRate = 100;
+                  
+                  if (rawStudents) {
+                    try {
+                      const parsed = JSON.parse(rawStudents);
+                      if (Array.isArray(parsed)) studentCount = parsed.length;
+                    } catch (e) {}
+                  }
+                  
+                  if (rawCash) {
+                    try {
+                      const parsed = JSON.parse(rawCash);
+                      if (Array.isArray(parsed)) {
+                        cashBalance = parsed.reduce((sum, c) => {
+                          const amt = Number(c.amount) || 0;
+                          return c.type === 'masuk' ? sum + amt : sum - amt;
+                        }, 0);
+                      }
+                    } catch (e) {}
+                  }
 
-                    <div className="flex items-center gap-1.5">
-                      {currentUser?.id === t.id && (
-                        <span className="text-[10px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 font-bold px-2 py-1 rounded-lg">
-                          Anda
-                        </span>
-                      )}
+                  if (rawStudents && rawAttendance) {
+                    try {
+                      const studentsList = JSON.parse(rawStudents);
+                      const attendanceDays = JSON.parse(rawAttendance);
+                      if (Array.isArray(studentsList) && Array.isArray(attendanceDays) && studentsList.length > 0 && attendanceDays.length > 0) {
+                        let totalHadir = 0;
+                        let totalRecords = 0;
+                        attendanceDays.forEach(day => {
+                          const records = day.records || {};
+                          studentsList.forEach(s => {
+                            if (records[s.id] !== undefined) {
+                              totalRecords++;
+                              if (records[s.id] === 'H') totalHadir++;
+                            }
+                          });
+                        });
+                        if (totalRecords > 0) {
+                          attendanceRate = Math.round((totalHadir / totalRecords) * 100);
+                        }
+                      }
+                    } catch (e) {}
+                  }
+
+                  return (
+                    <div key={t.id} className="p-4 bg-[#0F1115]/50 border border-slate-800 rounded-xl flex flex-col justify-between group space-y-3 hover:border-indigo-500/30 transition duration-200" id={`class-card-${t.id}`}>
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-1 text-left">
+                          <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-lg">
+                            {t.className}
+                          </span>
+                          <h4 className="text-xs sm:text-sm font-extrabold text-white mt-1.5">{t.name}</h4>
+                        </div>
+                        {currentUser?.id === t.id && (
+                          <span className="text-[9px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 font-bold px-2 py-0.5 rounded-md">
+                            Anda
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Dynamic Class Stats Block */}
+                      <div className="grid grid-cols-3 gap-2 pt-2 text-left">
+                        <div className="bg-[#10141A]/50 p-2 rounded-lg border border-slate-850/40">
+                          <span className="text-[9px] font-bold text-slate-500 uppercase block">Siswa</span>
+                          <span className="text-xs font-black text-slate-200">{studentCount} Murid</span>
+                        </div>
+                        <div className="bg-[#10141A]/50 p-2 rounded-lg border border-slate-850/40">
+                          <span className="text-[9px] font-bold text-slate-500 uppercase block">Kas Kelas</span>
+                          <span className="text-xs font-black text-emerald-400">
+                            {cashBalance >= 0 ? `Rp ${(cashBalance).toLocaleString('id-ID')}` : `-Rp ${Math.abs(cashBalance).toLocaleString('id-ID')}`}
+                          </span>
+                        </div>
+                        <div className="bg-[#10141A]/50 p-2 rounded-lg border border-slate-850/40">
+                          <span className="text-[9px] font-bold text-slate-500 uppercase block">Presensi</span>
+                          <span className="text-xs font-black text-sky-400">{attendanceRate}%</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* If Admin is logged in, show complete Teacher Account administration console */}

@@ -15,7 +15,8 @@ import {
   School,
   LogOut,
   Download,
-  Shield
+  Shield,
+  User
 } from 'lucide-react';
 
 import { 
@@ -47,6 +48,7 @@ import AdminExportPortal from './components/AdminExportPortal';
 import AdminPanel from './components/AdminPanel';
 import KalenderPendidikan from './components/KalenderPendidikan';
 import ModulAjarGenerator from './components/ModulAjarGenerator';
+import TeacherProfileManager from './components/TeacherProfileManager';
 import { AnimatePresence } from 'motion/react';
 
 // Default school-wide configuration for SD Negeri Cimandirasa
@@ -128,7 +130,7 @@ const blankPiket: PiketGroup[] = [
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'siswa' | 'presensi' | 'kas' | 'piket' | 'agenda' | 'jadwal' | 'nilai' | 'administrasi' | 'admin_panel' | 'kalender' | 'modul_ajar'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'siswa' | 'presensi' | 'kas' | 'piket' | 'agenda' | 'jadwal' | 'nilai' | 'administrasi' | 'admin_panel' | 'kalender' | 'modul_ajar' | 'profile'>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // 1. Navigation & Auth states
@@ -626,6 +628,7 @@ export default function App() {
               onLoginSuccess={handleLoginSuccess}
               teachers={teachers}
               passwords={passwords}
+              logoUrl={schoolInfo.logoUrl}
             />
           )}
         </AnimatePresence>
@@ -796,6 +799,18 @@ export default function App() {
               <Sparkles className="w-4 h-4" /> Generator Modul Ajar
             </button>
 
+            <button
+              onClick={() => { setActiveTab('profile'); setIsSidebarOpen(false); }}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl border transition ${
+                activeTab === 'profile' 
+                  ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' 
+                  : 'text-slate-400 hover:text-white hover:bg-slate-850/50 border-transparent'
+              }`}
+              id="profile-nav-tab"
+            >
+              <User className="w-4 h-4" /> Profil Saya
+            </button>
+
             {currentUser?.role === 'admin' && (
               <button
                 onClick={() => { setActiveTab('admin_panel'); setIsSidebarOpen(false); }}
@@ -860,9 +875,23 @@ export default function App() {
               <Menu className="w-5.5 h-5.5" />
             </button>
             
-            <div>
-              <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest block leading-tight">Portal SDN Cimandirasa</span>
-              <span className="text-xs font-extrabold text-white leading-none">{currentUser?.name || "Guru Kelas"}</span>
+            <div className="flex items-center gap-2">
+              {currentUser?.photoUrl ? (
+                <img 
+                  src={currentUser.photoUrl} 
+                  alt={currentUser.name} 
+                  className="w-8 h-8 rounded-full object-cover border border-indigo-500/30 shrink-0"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 border border-slate-700 shrink-0">
+                  <User className="w-4 h-4" />
+                </div>
+              )}
+              <div>
+                <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest block leading-tight">Portal SDN Cimandirasa</span>
+                <span className="text-xs font-extrabold text-white leading-none">{currentUser?.name || "Guru Kelas"}</span>
+              </div>
             </div>
           </div>
 
@@ -995,6 +1024,16 @@ export default function App() {
 
           {activeTab === 'modul_ajar' && (
             <ModulAjarGenerator currentTeacherClass={currentUser?.className} />
+          )}
+
+          {activeTab === 'profile' && currentUser && (
+            <TeacherProfileManager
+              currentUser={currentUser}
+              onUpdateProfile={(updatedUser) => {
+                handleUpdateTeacher(updatedUser);
+                setCurrentUser(updatedUser);
+              }}
+            />
           )}
         </main>
       </div>

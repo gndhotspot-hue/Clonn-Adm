@@ -23,13 +23,15 @@ interface LoginPageProps {
   teachers: TeacherAccount[];
   // Passwords mapped in localStorage or state
   passwords: { [username: string]: string };
+  logoUrl?: string;
 }
 
 export default function LoginPage({
   onClose,
   onLoginSuccess,
   teachers,
-  passwords
+  passwords,
+  logoUrl
 }: LoginPageProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -112,7 +114,7 @@ export default function LoginPage({
           <div className="text-center space-y-3">
             <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-indigo-500 to-indigo-600 p-0.5 shadow-lg overflow-hidden border border-indigo-400/20">
               <img 
-                src={schoolLogoImg} 
+                src={logoUrl || schoolLogoImg} 
                 alt="SDN Cimandirasa Logo" 
                 className="w-full h-full object-cover rounded-xl"
                 referrerPolicy="no-referrer"
@@ -187,33 +189,9 @@ export default function LoginPage({
             </button>
           </form>
 
-          {/* Quick Simulators for Grader Reviewer */}
-          <div className="pt-4 border-t border-slate-850 space-y-2.5">
-            <div className="flex items-center gap-1.5 text-indigo-400">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span className="text-[10px] font-black tracking-wider uppercase">Pilih Akun Simulasi (Review Instan)</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              {teachers.map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => handleQuickLogin(t.username)}
-                  className="p-2.5 bg-[#0F1115]/60 hover:bg-indigo-500/10 border border-slate-800 hover:border-indigo-500/25 rounded-xl text-left text-[11px] transition"
-                  type="button"
-                >
-                  <div className="font-bold text-white truncate">{t.name.split(',')[0]}</div>
-                  <div className="text-[9px] text-slate-500 mt-0.5 truncate">
-                    {t.role === 'admin' ? 'Admin Web' : `Wali Kelas ${t.className}`}
-                  </div>
-                </button>
-              ))}
-            </div>
-            
-            <p className="text-[9px] text-slate-550 text-center">
-              Semua data disimpan terisolasi per guru kelas di penyimpanan browser Anda.
-            </p>
-          </div>
+          <p className="text-[9px] text-slate-550 text-center pt-2 border-t border-slate-850/50">
+            Gunakan akun pendidik Anda. Semua data disimpan terisolasi di penyimpanan browser Anda.
+          </p>
         </div>
       </motion.div>
     </div>

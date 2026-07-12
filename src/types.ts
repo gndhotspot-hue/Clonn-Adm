@@ -94,6 +94,10 @@ export interface TeacherAccount {
   name: string;
   className: string;
   role: 'teacher' | 'admin';
+  photoUrl?: string;
+  nip?: string;
+  email?: string;
+  phone?: string;
 }
 
 export interface SchoolAnnouncement {
@@ -123,4 +127,5 @@ export interface SchoolInfo {
   email: string;
   announcements: SchoolAnnouncement[];
   achievements: SchoolAchievement[];
+  logoUrl?: string;
 }

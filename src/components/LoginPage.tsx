@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { TeacherAccount } from '../types';
 
 // Use the generated school logo
-const schoolLogoImg = '/src/assets/images/school_logo_1783870271743.jpg';
+const schoolLogoImg = '/src/assets/images/https://drive.google.com/file/d/1XttyENp0ohbaLM2EHabxaMAHlWTeIUzk/view?usp=sharing';
 
 interface LoginPageProps {
   onClose: () => void;
